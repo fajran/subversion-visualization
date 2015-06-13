@@ -3,12 +3,17 @@
 import sys
 
 class RevisionLog(object):
+    project = None
+
     revision = None
     author = None
     timestamp = None
     info = None
     changes = []
     log = None
+
+    def __init__(self, project=None):
+        self.project = project
 
     def is_branching(self):
         changes = self.changes
@@ -28,6 +33,25 @@ class RevisionLog(object):
             return None
         return self.changes[0]
 
+    def get_branch(self):
+        if len(self.changes) == 0:
+            return None
+        c = self.changes[0]
+
+        path = c.path
+        p = path.strip('/').split('/')
+        if len(p) == 0:
+            return None
+        if p[0] == self.project:
+            p = p[1:]
+        if len(p) == 0:
+            return None
+        if p[0] == 'branches':
+            p = p[1:]
+        if len(p) == 0:
+            return None
+        return p[0]
+
 class Change(object):
     type = None
     path = None
@@ -43,8 +67,9 @@ class Change(object):
         return self.__str__()
 
 class RevisionLogParser(object):
-    def __init__(self, inp):
+    def __init__(self, inp, project=None):
         self.inp = inp
+        self.project = project
 
     def get_revision_logs(self):
         for lines in self._split_logs():
@@ -56,7 +81,6 @@ class RevisionLogParser(object):
             return len(''.join(lines).strip()) == 0
 
         lines = []
-        index = 0
         for line in self.inp:
             line = line.rstrip()
 
@@ -65,7 +89,6 @@ class RevisionLogParser(object):
                     yield lines
 
                 lines = []
-                index = 0
                 continue
 
             lines.append(line)
@@ -95,7 +118,7 @@ class RevisionLogParser(object):
         return c
 
     def _parse_revision_log(self, lines):
-        revlog = RevisionLog()
+        revlog = RevisionLog(project=self.project)
 
         info = lines[0]
         p = [t.strip() for t in info.split('|')]
@@ -124,8 +147,10 @@ class RevisionLogParser(object):
         return revlog
 
 def analyze(inp):
-    p = RevisionLogParser(inp)
+    p = RevisionLogParser(inp, project='project')
     for revlog in p.get_revision_logs():
+        print('* r{} {}'.format(revlog.revision, revlog.get_branch()))
+
         branching = revlog.get_branching_info()
         if branching is not None:
             print(branching)
