@@ -35,6 +35,24 @@ class RevisionLog(object):
     changes = []
     log = None
 
+    def is_branching(self):
+        changes = self.changes
+        if len(changes) != 1:
+            return False
+
+        c = changes[0]
+        if c.type != 'A':
+            return False
+        if c.from_revision is None:
+            return False
+
+        return True
+
+    def get_branching_info(self):
+        if not self.is_branching():
+            return None
+        return self.changes[0]
+
 class Change(object):
     type = None
     path = None
@@ -96,27 +114,13 @@ def parse_revision_log(lines):
 
     return revlog
 
-def is_branching(revlog):
-    changes = revlog.changes
-    if len(changes) != 1:
-        return False
-
-    c = changes[0]
-    if c.type != 'A':
-        return False
-    if c.from_revision is None:
-        return False
-
-    return True
-
 def analyze(inp):
     for log in split_revision_log(inp):
         revlog = parse_revision_log(log)
-        if not is_branching(revlog):
-            continue
 
-        c = revlog.changes[0]
-        print(c)
+        branching = revlog.get_branching_info()
+        if branching is not None:
+            print(branching)
 
 
 def main():
