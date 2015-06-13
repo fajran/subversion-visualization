@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"io"
 	"strconv"
 	"strings"
 )
@@ -146,11 +147,11 @@ func parseLog(groups <-chan []string) <-chan *RevisionLog {
 	return c
 }
 
-func getLines() <-chan string {
+func readLines(r io.Reader) <-chan string {
 	c := make(chan string)
 
 	go func() {
-		s := bufio.NewScanner(os.Stdin)
+		s := bufio.NewScanner(r)
 		for s.Scan() {
 			line := s.Text()
 			c <- line
@@ -161,12 +162,14 @@ func getLines() <-chan string {
 	return c
 }
 
-func main() {
-	c0 := getLines()
-	c1 := splitLogLines(c0)
-	c2 := parseLog(c1)
+func ParseLog(r io.Reader) <-chan *RevisionLog {
+	lines := readLines(r)
+	groups := splitLogLines(lines)
+	return parseLog(groups)
+}
 
-	for revlog := range c2 {
+func main() {
+	for revlog := range ParseLog(os.Stdin) {
 		fmt.Printf("%v\n", revlog)
 	}
 }
