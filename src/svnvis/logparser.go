@@ -1,29 +1,11 @@
-package main
+package svnvis
 
 import (
 	"bufio"
-	"fmt"
-	"os"
 	"io"
 	"strconv"
 	"strings"
 )
-
-type RevisionLog struct {
-	Revision  int
-	Author    string
-	Timestamp string
-	Info      string
-	Changes   []Change
-	Log       string
-}
-
-type Change struct {
-	Type         string
-	Path         string
-	FromBranch   string
-	FromRevision int
-}
 
 func isLogSeparator(line string) bool {
 	t := strings.Trim(line, "-")
@@ -166,10 +148,4 @@ func ParseLog(r io.Reader) <-chan *RevisionLog {
 	lines := readLines(r)
 	groups := splitLogLines(lines)
 	return parseLog(groups)
-}
-
-func main() {
-	for revlog := range ParseLog(os.Stdin) {
-		fmt.Printf("%v\n", revlog)
-	}
 }
