@@ -74,10 +74,15 @@ func parseChange(line string) Change {
 		path = path[:pos]
 	}
 
+	var rbranch *string = nil
+	if branch != "" {
+		rbranch = &branch
+	}
+
 	return Change{
 		Type:         changeType,
 		Path:         path,
-		FromBranch:   branch,
+		FromBranch:   rbranch,
 		FromRevision: rev,
 	}
 }

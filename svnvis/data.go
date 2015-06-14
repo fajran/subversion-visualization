@@ -12,6 +12,20 @@ type RevisionLog struct {
 type Change struct {
 	Type         string
 	Path         string
-	FromBranch   string
+	FromBranch   *string
 	FromRevision int
+}
+
+func (r *RevisionLog) IsBranching() bool {
+	b, _ := r.GetBranchingInfo()
+	return b != nil
+}
+
+func (r *RevisionLog) GetBranchingInfo() (*string, int) {
+	if len(r.Changes) == 0 {
+		return nil, 0
+	}
+
+	c := r.Changes[0]
+	return c.FromBranch, c.FromRevision
 }
