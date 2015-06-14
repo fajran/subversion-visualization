@@ -158,3 +158,14 @@ func ParseLog(r io.Reader) <-chan *RevisionLog {
 	groups := splitLogLines(lines)
 	return parseLogGroups(groups)
 }
+
+func ParseLogToList(r io.Reader) []*RevisionLog {
+	logs := make([]*RevisionLog, 0)
+
+	p := ParseLog(r)
+	for log := range p {
+		logs = append(logs, log)
+	}
+
+	return logs
+}
