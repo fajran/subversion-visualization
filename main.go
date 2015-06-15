@@ -17,5 +17,9 @@ func main() {
 
 	} else if mode == "json" {
 		cli.Json()
+
+	} else if mode == "edgelist" {
+		cli.EdgeList()
+
 	}
 }
